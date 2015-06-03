@@ -67,14 +67,14 @@ fn solve_partial(op: Operator, lhs:f64, rhs:f64) -> f64 {
     }
 }
 
-fn is_number<'a>(c: Option<&'a(usize, char)>) -> bool {
+fn is_number(c: Option<&(usize, char)>) -> bool {
     match c {
         Some(&(_, c)) => c.is_numeric(),
         None => false
     }
 }
 
-fn is_rparen<'a>(c: Option<&'a(usize, char)>) -> bool {
+fn is_rparen(c: Option<&(usize, char)>) -> bool {
     match c {
         Some(&(_, c)) => (c == ')'),
         None => false
