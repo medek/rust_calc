@@ -1,23 +1,20 @@
 extern crate readline as rl;
 use std::ffi::CString;
-use std::io;
-use std::io::Write;
 use std::collections::hash_map::HashMap;
 
 pub struct Shell<'a> {
     prompt: CString,
-    stdout: io::Stdout,
     frontload: Option<&'a str>,
-    functions: HashMap<&'a str, Box<FnMut(&str, &mut io::Stdout) -> bool + 'a>>
+    functions: HashMap<&'a str, Box<FnMut(&str) -> bool + 'a>>
 }
 
 impl<'a> Shell<'a> {
     pub fn new(prompt: &str) -> Shell {
-        Shell{prompt: CString::new(prompt).unwrap(), stdout: io::stdout(), frontload: None, functions: HashMap::new()}
+        Shell{prompt: CString::new(prompt).unwrap(), frontload: None, functions: HashMap::new()}
     }
 
     pub fn function<F>(mut self, name: &'a str, func: F) -> Shell<'a>
-        where F: FnMut(&str, &mut io::Stdout) -> bool + 'a{
+        where F: FnMut(&str) -> bool + 'a{
         self.functions.insert(name, Box::new(func));
         self
     }
@@ -34,16 +31,16 @@ impl<'a> Shell<'a> {
     }
 
     fn call_func(&mut self, name: &str, command: &str) -> bool {
-        (*(self.functions.get_mut(name).unwrap()))(&command.to_string(), &mut self.stdout)
+        (*(self.functions.get_mut(name).unwrap()))(&command.to_string())
     }
 
     pub fn run<F>(&mut self, mut eval: F)
-        where F: FnMut(&String, &mut io::Stdout) -> bool {
+        where F: FnMut(&String) -> bool {
         let mut s = String::new();
         if !self.frontload.is_none() {
-            write!(self.stdout, "{}{}\n", String::from_utf8(self.prompt.to_bytes().to_vec()).unwrap(), &self.frontload.unwrap()).unwrap();
+            println!("{}{}\n", String::from_utf8(self.prompt.to_bytes().to_vec()).unwrap(), &self.frontload.unwrap());
             s.push_str(&self.frontload.unwrap());
-            eval(&s, &mut self.stdout);
+            eval(&s);
             rl::add_history(&CString::new(self.frontload.unwrap()).unwrap());
         }
         while let Ok(s) = rl::readline(&self.prompt) {
@@ -60,8 +57,7 @@ impl<'a> Shell<'a> {
                 }
                 continue;
             }
-            let shrinked = rs.chars().filter(|c: &char| *c != ' ').collect::<String>();
-            if eval(&shrinked, &mut self.stdout) == true {
+            if eval(&rs) == true {
                 break;
             }
             rl::add_history(&s);

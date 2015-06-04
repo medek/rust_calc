@@ -91,7 +91,7 @@ fn find_operator(expr: &str, r: Range<usize>) -> Result<(usize, Operator), EvalE
         .take(r.end-r.start)
         .enumerate()
         .peekable();
-    
+
 
     loop {
         let curr = itr.next();
@@ -252,7 +252,7 @@ fn parse_expr(expr: &String, r: Range<usize>) -> Result<f64, EvalError> {
             Err(e) => return Err(e)
         }
     }
-    
+
     if op < Operator::Function {
         match parse_expr(expr, Range{start:pos+1, ..r}) {
             Ok(f) => rhs = f,

@@ -2,10 +2,8 @@
 extern crate clap;
 extern crate readline as rl;
 
-const VERSION: &'static str = env!("CARGO_PKG_VERSION"); //'
+const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 use clap::{App, Arg};
-use std::io::Write;
-use std::io;
 mod shell;
 mod eval;
 use shell::Shell;
@@ -27,34 +25,35 @@ fn main() {
 
     if matches.occurrences_of("interactive") > 0 {
         interactive = true;
-    }    
+    }
 
     if interactive {
         Shell::new("expr> ")
             .frontload(matches.value_of("EXPR"))
-            .function(".help", |expr: &str, out: &mut io::Stdout| -> bool {
+            .function(".help", |expr: &str| -> bool {
                 if expr.len() == 0 {
-                    write!(out, "Supported mathematical operators: +-*/^()\n").unwrap();
-                    write!(out, "Supported functions: sin, cos, tan, asin, acos, atan, floor, ceil\n").unwrap();
-                    write!(out, "Meta-functions: .quit, .help\n").unwrap();
+                    println!("Supported mathematical operators: +-*/^()");
+                    println!("Supported functions: sin, cos, tan, asin, acos, atan, floor, ceil");
+                    println!("Meta-functions: .quit, .help");
                     return false;
                 }
                 match expr {
                     "help" => {
-                        write!(out, "prints the help message\n").unwrap();
+                        println!("prints the help message");
                     },
                     "quit" => {
-                        write!(out, "exits the shell\n").unwrap();
+                        println!("exits the shell");
                     },
-                    _ => write!(out, "...what?\n").unwrap()
+                    _ => println!("...what?")
                 }
                 false
             })
-            .function(".quit", |_,_ | -> bool {true})
-            .run(|expr: &String, out: &mut io::Stdout| {
-                match evaluate(expr) {
-                    Ok(f) => write!(out, "{}\n", f).unwrap(),
-                    Err(e) => write!(out, "{:?}\n", e).unwrap(),
+            .function(".quit", |_| -> bool {true})
+            .run(|expr: &String| {
+                let shrinked = expr.chars().filter(|c: &char| *c != ' ').collect::<String>();
+                match evaluate(&shrinked) {
+                    Ok(f) => println!("{}", f),
+                    Err(e) => println!("{:?}", e),
                 }
                 false
             });
