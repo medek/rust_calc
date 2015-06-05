@@ -49,7 +49,7 @@ impl<'a> Shell<'a> {
                 continue;
             }
 
-            if Shell::is_meta(&rs) { 
+            if Shell::is_meta(&rs) {
                 rs.push(' ');
                 let parts = rs.split(" ").collect::<Vec<&str>>();
                 if self.functions.contains_key(parts[0]) && Shell::call_func(self, parts[0], parts[1]) {

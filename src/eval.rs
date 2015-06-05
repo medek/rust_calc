@@ -12,6 +12,7 @@ pub struct EvalError<'a> {
 pub enum EvalErrorType {
     BracketMismatch(usize),
     UnknownFunction(usize),
+    EmptyFunction(usize),
     NotANumber(usize)
 }
 
@@ -206,6 +207,11 @@ fn parse_function(expr: &String, r: Range<usize>) -> Result<f64, EvalError> {
     let str_name = expr.chars().skip(r.start-1).collect::<String>();
     for f in STR_FUNCS.iter() {
         if str_name.starts_with(f) {
+            if r.end - (r.start+f.len()-1) <= 2 {
+                return Err(EvalError {
+                    kind: EvalErrorType::EmptyFunction(r.start),
+                    message: "expected expression in function"})
+            }
             match parse_expr(expr, Range{start: r.start+f.len(), end: r.end-1}) {
                 Ok(x) => return Ok(solve_function(str_func_to_real(f, x))),
                 Err(e) => return Err(e)
