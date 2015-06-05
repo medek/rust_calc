@@ -65,7 +65,8 @@ fn main() {
             Some(expr) => s.push_str(expr),
             None => return
         }
-        match evaluate(&s) {
+        let shrinked = s.chars().filter(|c: &char| *c != ' ').collect::<String>();
+        match evaluate(&shrinked) {
             Ok(f) => println!("{}", f),
             Err(e) => println!("{:?}", e)
         }
