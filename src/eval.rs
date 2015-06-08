@@ -3,9 +3,9 @@ use std::string::String;
 // Result/Error stuff
 
 #[derive(Debug)]
-pub struct EvalError<'a> {
+pub struct EvalError {
     kind: EvalErrorType,
-    message: &'a str
+    message: String
 }
 
 #[derive(Debug)]
@@ -13,7 +13,8 @@ pub enum EvalErrorType {
     BracketMismatch(usize),
     UnknownFunction(usize),
     EmptyFunction(usize),
-    NotANumber(usize)
+    NotANumber(usize),
+    EmptyExpression,
 }
 
 enum Function {
@@ -182,7 +183,7 @@ fn find_operator(expr: &str, r: Range<usize>) -> Result<(usize, Operator), EvalE
     if paren != 0 {
         return Err(EvalError{
             kind: EvalErrorType::BracketMismatch(pos),
-            message: "I added them up, it's wonky!"
+            message: "I added them up, it's wonky!".to_string()
         })
     }
 
@@ -210,7 +211,7 @@ fn parse_function(expr: &String, r: Range<usize>) -> Result<f64, EvalError> {
             if r.end - (r.start+f.len()-1) <= 2 {
                 return Err(EvalError {
                     kind: EvalErrorType::EmptyFunction(r.start),
-                    message: "expected expression in function"})
+                    message: "expected expression in function".to_string()})
             }
             match parse_expr(expr, Range{start: r.start+f.len(), end: r.end-1}) {
                 Ok(x) => return Ok(solve_function(str_func_to_real(f, x))),
@@ -220,7 +221,7 @@ fn parse_function(expr: &String, r: Range<usize>) -> Result<f64, EvalError> {
     }
     Err(EvalError{
         kind: EvalErrorType::UnknownFunction(r.start),
-        message: expr})
+        message: "don't know that one".to_string()})
 }
 
 fn parse_number(expr: &String, range: Range<usize>) -> Result<f64, EvalError> {
@@ -233,7 +234,7 @@ fn parse_number(expr: &String, range: Range<usize>) -> Result<f64, EvalError> {
         Ok(f) => Ok(f),
         Err(_) => Err(EvalError{
             kind: EvalErrorType::NotANumber(range.start),
-            message: "ParseFloatError"
+            message: "ParseFloatError".to_string()
         })
     }
 }
@@ -279,5 +280,11 @@ fn parse_expr(expr: &String, r: Range<usize>) -> Result<f64, EvalError> {
 }
 
 pub fn evaluate(expr: &String) -> Result<f64, EvalError> {
-    parse_expr(expr, Range{start: 0, end: expr.len()})
+    let shrinked:String = expr.chars().filter(|c: &char| *c != ' ').collect::<String>();
+    if shrinked.len() == 0 {
+        return Err(EvalError{
+            kind: EvalErrorType::EmptyExpression,
+            message: "I'm not psychic, need input!".to_string()})
+    }
+    parse_expr(&shrinked, Range{start: 0, end: shrinked.len()})
 }
