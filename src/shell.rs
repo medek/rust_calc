@@ -20,6 +20,9 @@ impl<'a> Shell<'a> {
     }
 
     fn is_meta(c: &String) -> bool {
+        if c.len() < 2 {
+            return false;
+        }
         let mut itr = c.chars().peekable();
         let a = itr.next().unwrap();
         let b = itr.peek().unwrap();

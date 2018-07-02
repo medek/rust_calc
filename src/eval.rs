@@ -242,8 +242,8 @@ fn parse_number(expr: &String, range: Range<usize>) -> Result<f64, EvalError> {
 fn parse_expr(expr: &String, r: Range<usize>) -> Result<f64, EvalError> {
     let mut lhs:f64 = 0.0;
     let mut rhs:f64 = 0.0;
-    let mut pos:usize;
-    let mut op;
+    let pos:usize;
+    let  op;
 
     match find_operator(expr, Range{..r}) {
         Ok((p, t)) => {
